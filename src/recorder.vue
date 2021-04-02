@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  name: "VueWebCam",
+  name: "AmplifyRecorder",
 
   props: {
     width: {

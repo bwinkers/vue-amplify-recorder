@@ -1,62 +1,59 @@
-<p align="center">
-    <img width="150" src="assets/logo.png">
-</p>
+# vue-amplify-recorder
 
-<p align="center">
-    <img src="assets/splash.png">
-</p>
-
-# vue-web-cam
-
-[![npm](https://img.shields.io/npm/v/vue-web-cam.svg)](https://www.npmjs.com/package/vue-web-cam)
-[![npm](https://img.shields.io/npm/dm/vue-web-cam.svg)](https://www.npmjs.com/package/vue-web-cam)
+[![npm](https://img.shields.io/npm/v/vue-amplify-recorder.svg)](https://www.npmjs.com/package/vue-amplify-recorder)
+[![npm](https://img.shields.io/npm/dm/vue-amplify-recorder.svg)](https://www.npmjs.com/package/vue-amplify-recorder)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Webcam component for VueJs. See [this](http://caniuse.com/#feat=stream)
+This is a recorder component for VueJs. 
+This can take snapshots, video, audio tracks, screen recordings and capture.
+It supports uploading the content to Amplify S3 Storage.
+There is a JavaScript Lambda function to perform basic processing on the uploads.
+
+See [this](http://caniuse.com/#feat=stream)
 for browser compatibility.
 
 ## Installation
 
 ```bash
-npm install vue-web-cam --save
+npm install vue-amplify-recorder --save
 // or
-yarn add vue-web-cam
+yarn add vue-amplify-recorder
 ```
 
 ## Usage
 
 ```js
 import Vue from 'vue'
-import WebCam from "../../src";
-Vue.use(WebCam);
+import AmplifyRecorder from "../../src";
+Vue.use(AmplifyRecorder);
 
 
-<vue-web-cam ... />
+<vue-amplify-recorder ... />
 
 // or
-import { WebCam } from "vue-web-cam";
+import { AmplifyRecorder } from "vue-amplify-recorder";
 
 components: {
-    WebCam
+    AmplifyRecorder
 }
 
-<web-cam ... />
+<vue-amplify-recorder ... />
 
 components: {
-    'vue-web-cam': WebCam
+    'vue-amplify-recorder': AmplifyRecorder
 }
 
-<vue-web-cam ... />
+<vue-amplify-recorder ... />
 ```
 
 ## Nuxt.js
 
-Add `vue-web-cam/nuxt` to modules section of `nuxt.config.js`
+Add `vue-amplify-recorder/nuxt` to modules section of `nuxt.config.js`
 
 ```javascript
 {
-  modules: ['vue-web-cam/nuxt']
+  modules: ['vue-amplify-recorder/nuxt']
 }
 ```
 
@@ -95,12 +92,14 @@ npm run dev
 
 | name         | param    | notes                                                                                                 |
 | ------------ | -------- | ----------------------------------------------------------------------------------------------------- |
-| capture      | void     | Capture the current image through the webcam as a base64 encoded dataUri                                 |
+| snapshot      | void     | Capture the current video player image as a base64 encoded dataUri                                 |
 | changeCamera | deviceId | change the currently selected camera. Must pass in the device ID                                      |
 | start        | void     | Programmatically Start the camera after stopping it (relies on deviceId prop passed to the component) |
 | stop         | void     | Programmatically stop the camera                                                                      |
 | pause        | void     | Programmatically pause the camera                                                                     |
-| resume       | void     | Programmatically resume the camera after it was paused                                                |
+| resume       | void     | Programmatically resume the camera after it was paused
+| record       | void     | Start recording the current video stream
+
 
 ## Contributing
 
@@ -115,5 +114,9 @@ If you'd like to help make this project better you can help with the following t
 MIT
 
 ## Credits
+This was based off [vue-web-cam](https://www.npmjs.com/package/vue-web-cam). Which was in turn based off [@smronju vue-webcam](https://github.com/smronju/vue-webcam) and [react-webcam](https://github.com/mozmorris/react-webcam).
 
-This is based off [@smronju vue-webcam](https://github.com/smronju/vue-webcam) and [react-webcam](https://github.com/mozmorris/react-webcam)
+Image processing and file upload concepts were borrowed from:
+[OLD AWS Workshop](https://amplify-workshop.go-aws.com/10_prerequisites.html)
+and 
+[Nader Dabit's Amplify Photo Sharing Workshop](https://github.com/dabit3/amplify-photo-sharing-workshop)

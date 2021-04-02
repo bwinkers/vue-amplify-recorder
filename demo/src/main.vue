@@ -5,7 +5,7 @@
                 <h2>Current Camera</h2>
                 <code v-if="device">{{ device.label }}</code>
                 <div class="border">
-                    <vue-web-cam
+                    <amplify-recorder
                         ref="webcam"
                         :device-id="deviceId"
                         width="100%"
@@ -46,12 +46,12 @@
 </template>
 
 <script>
-import { WebCam } from "../../src";
+import { AmplifyRecorder } from "../../src";
 
 export default {
     name: "App",
     components: {
-        "vue-web-cam": WebCam
+        "amplify-recorder": AmplifyRecorder
     },
     data() {
         return {

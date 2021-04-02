@@ -1,7 +1,7 @@
-import WebCam from "./webcam";
+import AmplifyRecorder from "./recorder";
 
 function plugin(Vue) {
-  Vue.component("vue-web-cam", WebCam);
+  Vue.component("amplify-recorder", AmplifyRecorder);
 }
 
 // Install by default if using the script tag
@@ -12,4 +12,4 @@ if (typeof window !== "undefined" && window.Vue) {
 export default plugin;
 const version = "__VERSION__";
 // Export all components too
-export { WebCam, version };
+export { AmplifyRecorder, version };
