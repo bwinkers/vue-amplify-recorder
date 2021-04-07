@@ -1,7 +1,7 @@
-import AmplifyRecorder from "./recorder";
+import VueRecorder from "./recorder";
 
 function plugin(Vue) {
-  Vue.component("amplify-recorder", AmplifyRecorder);
+  Vue.component("vue-recorder", VueRecorder);
 }
 
 // Install by default if using the script tag
@@ -12,4 +12,4 @@ if (typeof window !== "undefined" && window.Vue) {
 export default plugin;
 const version = "__VERSION__";
 // Export all components too
-export { AmplifyRecorder, version };
+export { VueRecorder, version };

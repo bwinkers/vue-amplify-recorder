@@ -10,60 +10,63 @@
 </template>
 
 <script>
+import { v4 as uuidv4 } from "uuid";
+
 export default {
-  name: "AmplifyRecorder",
+  name: "VueRecorder",
 
   props: {
     width: {
       type: [Number, String],
-      default: "100%",
+      default: "100%"
     },
     height: {
       type: [Number, String],
-      default: 500,
+      default: 500
     },
     autoplay: {
       type: Boolean,
-      default: true,
+      default: true
     },
     screenshotFormat: {
       type: String,
-      default: "image/jpeg",
+      default: "image/jpeg"
     },
     selectFirstDevice: {
       type: Boolean,
-      default: false,
+      default: false
     },
     deviceId: {
       type: String,
-      default: null,
+      default: null
     },
     playsinline: {
       type: Boolean,
-      default: true,
+      default: true
     },
     resolution: {
       type: Object,
       default: null,
-      validator: (value) => {
+      validator: value => {
         return value.height && value.width;
-      },
-    },
+      }
+    }
   },
-
   data() {
     return {
       source: null,
       canvas: null,
       camerasListEmitted: false,
       cameras: [],
+      recorder: null,
+      recordings: []
     };
   },
 
   watch: {
-    deviceId: function (id) {
+    deviceId: function(id) {
       this.changeCamera(id);
-    },
+    }
   },
 
   mounted() {
@@ -79,7 +82,7 @@ export default {
      * get user media
      */
     legacyGetUserMediaSupport() {
-      return (constraints) => {
+      return constraints => {
         // First get ahold of the legacy getUserMedia, if present
         let getUserMedia =
           navigator.getUserMedia ||
@@ -97,7 +100,7 @@ export default {
         }
 
         // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-        return new Promise(function (resolve, reject) {
+        return new Promise(function(resolve, reject) {
           getUserMedia.call(navigator, constraints, resolve, reject);
         });
       };
@@ -124,7 +127,7 @@ export default {
     loadCameras() {
       navigator.mediaDevices
         .enumerateDevices()
-        .then((deviceInfos) => {
+        .then(deviceInfos => {
           for (let i = 0; i !== deviceInfos.length; ++i) {
             let deviceInfo = deviceInfos[i];
             if (deviceInfo.kind === "videoinput") {
@@ -142,7 +145,7 @@ export default {
             this.camerasListEmitted = true;
           }
         })
-        .catch((error) => this.$emit("notsupported", error));
+        .catch(error => this.$emit("notsupported", error));
     },
 
     /**
@@ -174,13 +177,13 @@ export default {
     },
 
     /**
-     * stop the selected streamed video to change camera
+     * stop the selected streamed video to change camera or switch to screenshare
      */
     stopStreamedVideo(videoElem) {
       let stream = videoElem.srcObject;
       let tracks = stream.getTracks();
 
-      tracks.forEach((track) => {
+      tracks.forEach(track => {
         // stops the video track
         track.stop();
         this.$emit("stopped", stream);
@@ -190,15 +193,16 @@ export default {
       });
     },
 
-    // stop the video
+    // stop the video from camera or screenshare
     stop() {
       if (this.$refs.video !== null && this.$refs.video.srcObject) {
         this.stopStreamedVideo(this.$refs.video);
       }
     },
 
-    // start the video
+    // start the video camera
     start() {
+      this.stop(); // in case screensharing is active
       if (this.deviceId) {
         this.loadCamera(this.deviceId);
       }
@@ -232,15 +236,15 @@ export default {
 
       navigator.mediaDevices
         .getUserMedia(constraints)
-        .then((stream) => {
+        .then(stream => {
           //Make sure to stop this MediaStream
           let tracks = stream.getTracks();
-          tracks.forEach((track) => {
+          tracks.forEach(track => {
             track.stop();
           });
           this.loadCameras();
         })
-        .catch((error) => this.$emit("error", error));
+        .catch(error => this.$emit("error", error));
     },
 
     /**
@@ -256,15 +260,30 @@ export default {
 
       navigator.mediaDevices
         .getUserMedia(constraints)
-        .then((stream) => this.loadSrcStream(stream))
-        .catch((error) => this.$emit("error", error));
+        .then(stream => this.loadSrcStream(stream))
+        .catch(error => this.$emit("error", error));
     },
 
     /**
-     * capture screenshot
+     * capture snapshot of current video
      */
-    capture() {
+    snapshot() {
       return this.getCanvas().toDataURL(this.screenshotFormat);
+    },
+
+    /**
+     * download snapshot captured from video
+     */
+    downloadSnapshot() {
+      var blob = this.recordings[recordingIndex];
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+      a.href = url;
+      a.download = "test.webm";
+      a.click();
+      window.URL.revokeObjectURL(url);
     },
 
     /**
@@ -286,6 +305,59 @@ export default {
 
       return canvas;
     },
-  },
+
+    /**
+     * Start recording the current video
+     */
+    async startRecording() {
+      const stream = this.$refs.video.srcObject;
+      const recorder = new MediaRecorder(stream);
+      this.recorder = recorder;
+
+      this.recorder.ondataavailable = event => this.pushVideoData(event.data);
+      this.recorder.start();
+      console.log(this.recorder.state);
+    },
+
+    /**
+     * Stop recording
+     */
+    async stopRecording() {
+      if (this.$refs.video !== null && this.$refs.video.srcObject) {
+        this.recorder.stop();
+        console.log(this.recorder.state);
+      }
+    },
+    /**
+     * Push a recorded data blob onto recordings
+     */
+    async pushVideoData(data) {
+      if (data.size > 0) {
+        const uid = await uuidv4();
+        data.name = "clip-" + uid + ".webm";
+        console.log("pushing video...");
+        this.recordings.push(data);
+      }
+    },
+    async startScreenshare() {
+      console.log("Starting Screenshare");
+
+      this.stop();
+
+      let stream = null;
+
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia();
+        this.loadSrcStream(stream);
+      } catch (err) {
+        console.error("Error: " + err);
+      }
+      console.log(this.$refs.video);
+    },
+    stopScreenshare() {
+      console.log("Stopping Screenshare");
+      this.stop();
+    }
+  }
 };
 </script>

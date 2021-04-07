@@ -6,9 +6,9 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 This is a recorder component for VueJs. 
-This can take snapshots, video, audio tracks, screen recordings and capture.
-It supports uploading the content to Amplify S3 Storage.
-There is a JavaScript Lambda function to perform basic processing on the uploads.
+This can take snapshots, video, audio tracks, screen recordings and screen snpshots.
+
+It works seamlessly with AWS Amplify S3 Storage.
 
 See [this](http://caniuse.com/#feat=stream)
 for browser compatibility.
