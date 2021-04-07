@@ -12,6 +12,7 @@
           @error="onError"
           @cameras="onCameras"
           @camera-change="onCameraChange"
+          screenshotFormat="image/png"
         />
         <v-card-actions fluid class="justify-center">
           <v-container class="d-flex align-center justify-center" v-if="!isRecording">
@@ -53,9 +54,7 @@
       <v-card v-show="view == 'cameraVideo'" flat> </v-card>
       <v-card v-show="view == 'screenVideo'" flat> </v-card>
       <v-card v-show="view == 'snapshot'">
-        <figure class="figure">
-          <img :src="img" class="fluid" />
-        </figure>
+        <img :src="img" width="100%" height="100%"/>
         <v-card-actions fluid class="justify-center">
           <v-container class="d-flex align-center justify-center">
             <v-btn class="mx-2" @click="onCloseSnapshot" fab mdi-icon x-small light
@@ -65,7 +64,7 @@
               ><v-icon x-large>mdi-download-circle</v-icon></v-btn
             >
           </v-container>
-          </v-card-actions>
+        </v-card-actions>
       </v-card>
       <v-card v-show="view == 'playVideo'" flat> </v-card>
       <h2>Current Camera</h2>
@@ -158,8 +157,8 @@ export default {
   },
   methods: {
     onSnapshot() {
-      this.view = 'snapshot'
-      this.img = this.$refs.recorder.snapshot();
+      this.view = "snapshot";
+      this.img = this.$refs.recorder.takeSnapshot();
     },
     onStarted(stream) {
       console.log("On Started Event", stream);
@@ -186,7 +185,9 @@ export default {
       console.log("On Camera Change Event", deviceId);
     },
     onCloseSnapshot() {
-      this.view = 'video'
+      this.view = "video";
+      this.img = null;
+      this.$refs.recorder.deleteSnapshot()
       console.log("Closed Snapshot");
     },
     onSnapshotDownload() {

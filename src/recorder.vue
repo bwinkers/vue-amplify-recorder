@@ -59,7 +59,8 @@ export default {
       camerasListEmitted: false,
       cameras: [],
       recorder: null,
-      recordings: []
+      recordings: [],
+      snapshot: null
     };
   },
 
@@ -267,23 +268,55 @@ export default {
     /**
      * capture snapshot of current video
      */
-    snapshot() {
-      return this.getCanvas().toDataURL(this.screenshotFormat);
+    takeSnapshot() {
+      this.snapshot = this.getCanvas().toDataURL(this.screenshotFormat);
+      return this.snapshot;
+    },
+
+    /**
+     * Delete the snapshot to save memory
+     */
+    async deleteSnapshot() {
+      this.snapshot = null;
     },
 
     /**
      * download snapshot captured from video
      */
-    downloadSnapshot() {
-      var blob = this.recordings[recordingIndex];
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
+    async downloadSnapshot() {
+      const imgInfo = await this.dataURItoBlob(this.snapshot);
+      const a = document.createElement("a");
       document.body.appendChild(a);
       a.style = "display: none";
-      a.href = url;
-      a.download = "test.webm";
+      a.href = this.snapshot;
+      const uid = await uuidv4();
+      a.download = uid + imgInfo.type.split("/").pop();
       a.click();
-      window.URL.revokeObjectURL(url);
+    },
+
+    /**
+     * convert base64/URLEncoded data to binary object that can be uploaded and downloaded
+     */
+    async dataURItoBlob(dataURI) {
+      // convert base64/URLEncoded data component to raw binary data held in a string
+      var byteString;
+      if (dataURI.split(",")[0].indexOf("base64") >= 0)
+        byteString = atob(dataURI.split(",")[1]);
+      else byteString = unescape(dataURI.split(",")[1]);
+
+      // separate out the mime component
+      var mimeString = dataURI
+        .split(",")[0]
+        .split(":")[1]
+        .split(";")[0];
+
+      // write the bytes of the string to a typed array
+      var ia = new Uint8Array(byteString.length);
+      for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+
+      return new Blob([ia], { type: mimeString });
     },
 
     /**
