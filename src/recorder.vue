@@ -22,7 +22,7 @@ export default {
     },
     height: {
       type: [Number, String],
-      default: 500
+      default: "100%"
     },
     autoplay: {
       type: Boolean,
@@ -31,10 +31,6 @@ export default {
     screenshotFormat: {
       type: String,
       default: "image/jpeg"
-    },
-    selectFirstDevice: {
-      type: Boolean,
-      default: false
     },
     deviceId: {
       type: String,
@@ -66,7 +62,7 @@ export default {
 
   watch: {
     deviceId: function(id) {
-      this.changeCamera(id);
+      this.changeVideoInput(id);
     }
   },
 
@@ -138,9 +134,10 @@ export default {
         })
         .then(() => {
           if (!this.camerasListEmitted) {
-            if (this.selectFirstDevice && this.cameras.length > 0) {
-              this.deviceId = this.cameras[0].deviceId;
-            }
+            //if (this.selectFirstDevice && this.cameras.length > 0) {
+            //  console.log("Using first device");
+            //  this.deviceId = this.cameras[0].deviceId;
+            //}
 
             this.$emit("cameras", this.cameras);
             this.camerasListEmitted = true;
@@ -150,12 +147,18 @@ export default {
     },
 
     /**
-     * change to a different camera stream, like front and back camera on phones
+     * change to a different input stream, like front and back camera on phones or screenshare
      */
-    changeCamera(deviceId) {
+    changeVideoInput(deviceId) {
       this.stop();
       this.$emit("camera-change", deviceId);
-      this.loadCamera(deviceId);
+      if (deviceId) {
+        if (deviceId != "screenshare") {
+          this.loadCamera(deviceId);
+        } else if (deviceId == "screenshare") {
+          this.startScreenshare();
+        }
+      }
     },
 
     /**
@@ -202,8 +205,8 @@ export default {
     },
 
     // start the video camera
-    start() {
-      this.stop(); // in case screensharing is active
+    startCamera() {
+      //this.stop(); // in case screensharing is active
       if (this.deviceId) {
         this.loadCamera(this.deviceId);
       }
@@ -324,6 +327,7 @@ export default {
      */
     getCanvas() {
       let video = this.$refs.video;
+      console.log(video);
       if (!this.ctx) {
         let canvas = document.createElement("canvas");
         canvas.height = video.videoHeight;

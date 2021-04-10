@@ -1,32 +1,40 @@
 <template>
-  <v-row>
+  <v-row class="fluid align-center justify-center" >
     <v-col>
       <v-card v-show="view == 'video'">
         <vue-recorder
           ref="recorder"
           :device-id="deviceId"
-          width="100%"
-          height="100%"
           @started="onStarted"
           @stopped="onStopped"
           @error="onError"
           @cameras="onCameras"
-          @camera-change="onCameraChange"
+          @video-change="onVideoChange"
           screenshotFormat="image/png"
         />
         <v-card-actions fluid class="justify-center">
-          <v-container class="d-flex align-center justify-center" v-if="!isRecording">
-            <v-btn class="mx-2" @click="onRecord" fab mdi-icon x-small light
+          <v-container class="d-flex align-center justify-center" v-if="controls=='videoInput'">
+            <v-select :items="videoOptions" v-model="videoSource" label="Select video input">
+            </v-select>
+          </v-container>
+          <v-container class="d-flex align-center justify-center" v-if="controls=='liveVideo'">
+            <v-btn class="mx-2" @click="record" fab mdi-icon x-small light
               ><v-icon x-large color="red">mdi-record-circle</v-icon></v-btn
             >
+            <v-btn class="mx-2" @click="snapshot" fab mdi-icon x-small light
+              ><v-icon x-large>mdi-camera-iris</v-icon></v-btn
+            >
+            <v-btn class="mx-2" @click="stop" fab mdi-icon x-small light
+              ><v-icon x-large>mdi-close-circle</v-icon></v-btn
+            >
           </v-container>
-          <v-container class="d-flex align-center justify-center" v-if="isRecording">
-            <v-btn class="mx-2" @click="onRecordStop" fab mdi-icon x-small light
+          <v-container class="d-flex align-center justify-center" v-if="controls=='recording'">
+            <v-btn class="mx-2" @click="recordStop" fab mdi-icon x-small light
               ><v-icon x-large>mdi-stop-circle</v-icon></v-btn
             >
             <v-btn
               class="mx-2"
-              @click="onPause"
+              @click="pause"
               fab
               mdi-icon
               x-small
@@ -36,7 +44,7 @@
             >
             <v-btn
               class="mx-2"
-              @click="onResume"
+              @click="resume"
               fab
               mdi-icon
               x-small
@@ -44,75 +52,26 @@
               v-if="isPaused"
               ><v-icon x-large>mdi-pause-circle</v-icon></v-btn
             >
-            <v-btn class="mx-2" @click="onSnapshot" fab mdi-icon x-small light
+            <v-btn class="mx-2" @click="snapshot" fab mdi-icon x-small light
               ><v-icon x-large>mdi-camera-iris</v-icon></v-btn
             >
           </v-container>
         </v-card-actions>
       </v-card>
-      <v-card v-show="view == 'selectVideo'" flat> </v-card>
-      <v-card v-show="view == 'cameraVideo'" flat> </v-card>
-      <v-card v-show="view == 'screenVideo'" flat> </v-card>
       <v-card v-show="view == 'snapshot'">
         <img :src="img" width="100%" height="100%"/>
         <v-card-actions fluid class="justify-center">
           <v-container class="d-flex align-center justify-center">
-            <v-btn class="mx-2" @click="onCloseSnapshot" fab mdi-icon x-small light
+            <v-btn class="mx-2" @click="closeSnapshot" fab mdi-icon x-small light
               ><v-icon x-large color="red">mdi-close-circle</v-icon></v-btn
             >
-            <v-btn class="mx-2" @click="onSnapshotDownload" fab mdi-icon x-small light
+            <v-btn class="mx-2" @click="snapshotDownload" fab mdi-icon x-small light
               ><v-icon x-large>mdi-download-circle</v-icon></v-btn
             >
           </v-container>
         </v-card-actions>
       </v-card>
       <v-card v-show="view == 'playVideo'" flat> </v-card>
-      <h2>Current Camera</h2>
-      <code v-if="device">{{ device.label }}</code>
-      <div class="border"></div>
-
-      <div class="row">
-        <div class="col-md-12">
-          <select v-model="camera">
-            <option>-- Select Device --</option>
-            <option
-              v-for="device in devices"
-              :key="device.deviceId"
-              :value="device.deviceId"
-            >
-              {{ device.label }}
-            </option>
-          </select>
-          <button type="button" class="btn btn-success" @click="onStart">
-            Start Camera Video
-          </button>
-        </div>
-        <div class="col-md-12">
-          <button type="button" class="btn btn-success" @click="onScreenshare">
-            Start Screen Share
-          </button>
-        </div>
-        <div class="col-md-12">
-          <button type="button" class="btn btn-success" @click="onRecord">
-            Start Recording
-          </button>
-          <button type="button" class="btn btn-success" @click="onRecordStop">
-            Stop Recording
-          </button>
-          <button type="button" class="btn btn-success" @click="onPause">Pause</button>
-          <button type="button" class="btn btn-success" @click="onResume">Resume</button>
-        </div>
-        <div class="col-md-12">
-          <button type="button" class="btn btn-danger" @click="onStop">Stop Video</button>
-          <button type="button" class="btn btn-primary" @click="onSnapshot">
-            Snapshot
-          </button>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <h2>Captured Image</h2>
-      </div>
     </v-col>
   </v-row>
 </template>
@@ -128,35 +87,56 @@ export default {
   data() {
     return {
       img: null,
-      camera: null,
+      videoSource: null,
       deviceId: null,
       devices: [],
       view: "video",
-      isRecording: false,
       isPaused: false,
+      controls: 'videoInput',
+      staticVideoOptions: [
+        {
+          divider: true,
+          header: "Screen Sharing"
+        },
+        {
+          text: "Screen share",
+          value: "screenshare"
+        }
+      ],
+      cameraVideoOptionsHeader: [
+        {
+          divider: true,
+          header: "Cameras"
+        }
+      ]
     };
   },
   computed: {
     device: function () {
       return this.devices.find((n) => n.deviceId === this.deviceId);
     },
+    videoOptions: function () {
+      const cameras = this.cameraVideoOptionsHeader;
+      const devices = this.devices;
+      devices.forEach(device => {
+        cameras.push({text: device.label, value: device.deviceId});
+      }
+      );
+      
+      const options = [...cameras, ...this.staticVideoOptions];
+      return options;
+    }
   },
   watch: {
-    camera: function (id) {
-      this.deviceId = id;
-    },
-    devices: function () {
-      // Once we have a list select the first one
-      const [first, ...tail] = this.devices;
-      console.log(tail);
-      if (first) {
-        this.camera = first.deviceId;
-        this.deviceId = first.deviceId;
+    videoSource: function (id) {
+      if(id) {
+        this.deviceId = id;
+        this.controls = 'liveVideo'
       }
     },
   },
   methods: {
-    onSnapshot() {
+    snapshot() {
       this.view = "snapshot";
       this.img = this.$refs.recorder.takeSnapshot();
     },
@@ -166,10 +146,13 @@ export default {
     onStopped(stream) {
       console.log("On Stopped Event", stream);
     },
-    onStop() {
+    stop() {
       this.$refs.recorder.stop();
+      this.controls = 'videoInput';
+      this.videoSource = null;
+      this.deviceId = null;
     },
-    onStart() {
+    start() {
       this.$refs.recorder.start();
     },
     onError(error) {
@@ -179,37 +162,45 @@ export default {
       this.devices = cameras;
       console.log("On Cameras Event", cameras);
     },
-    onCameraChange(deviceId) {
-      this.deviceId = deviceId;
-      this.camera = deviceId;
-      console.log("On Camera Change Event", deviceId);
+    onVideoChange(deviceId) {
+      console.log(deviceId);
+      if(deviceId == 'screenshare') {
+        console.log(deviceId);
+      } else {
+        this.deviceId = deviceId;
+        this.videoSource = deviceId;
+      }
+      
+      console.log("On Video Change Event", deviceId);
     },
-    onCloseSnapshot() {
+    closeSnapshot() {
       this.view = "video";
       this.img = null;
       this.$refs.recorder.deleteSnapshot()
       console.log("Closed Snapshot");
     },
-    onSnapshotDownload() {
+    snapshotDownload() {
       console.log("Download Snapshot");
       this.$refs.recorder.downloadSnapshot();
     },
-    onRecordStop() {
-      this.isRecording = false;
+    recordStop() {
+      this.controls = 'liveVideo';
       this.$refs.recorder.stopRecording();
+      // resume the video, minus recording
+      this.resume()
     },
-    onRecord() {
-      this.isRecording = true;
+    record() {
+      this.controls = 'recording';
       this.$refs.recorder.startRecording();
     },
-    onScreenshare() {
+    screenshare() {
       this.$refs.recorder.startScreenshare();
     },
-    onPause() {
+    pause() {
       this.isPaused = true;
       this.$refs.recorder.pause();
     },
-    onResume() {
+    resume() {
       this.isPaused = false;
       this.$refs.recorder.resume();
     },
