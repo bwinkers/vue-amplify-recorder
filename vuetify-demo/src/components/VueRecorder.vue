@@ -10,6 +10,7 @@
           @error="onError"
           @cameras="onCameras"
           @video-change="onVideoChange"
+          @new-recording="onNewRecording"
           screenshotFormat="image/png"
         />
         <v-card-actions fluid class="justify-center">
@@ -72,6 +73,76 @@
         </v-card-actions>
       </v-card>
       <v-card v-show="view == 'playVideo'" flat> </v-card>
+      <v-row>
+        <v-col>
+          <v-card>
+          <v-card-title>Recordings</v-card-title>
+
+          <v-simple-table>
+            <template v-slot:default>
+              <thead>
+                <tr>
+                  <th class="text-left"></th>
+                  <th class="text-left">Name</th>
+                  <th class="text-left">Caption</th>
+                  <th class="text-left">Size</th>
+                  <th class="text-left">Type</th>
+                  <th class="text-left">Download</th>
+                  <th class="text-left">Upload</th>
+                  <th class="text-left">Play</th>
+                  <th class="text-left">Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in recordings" :key="index">
+                  <td class="text-left">{{ index + 1 }}</td>
+                  <td class="text-left">{{ item.name }}</td>
+                  <td class="text-left">
+                    {{ item.caption
+                    }}<v-icon @click="editRecordingCaption(index)"
+                      >mdi-pencil</v-icon
+                    >
+                  </td>
+                  <td class="text-left">{{ item.size }}</td>
+                  <td class="text-left">{{ item.type.slice(0, 5) }}</td>
+                  <td class="text-left">
+                    <v-btn icon medium @click="onDownloadRecording(index)"
+                      ><v-icon medium color="green darken-2"
+                        >mdi-download</v-icon
+                      ></v-btn
+                    >
+                  </td>
+                  <td class="text-left">
+                    <v-icon
+                      medium
+                      color="green darken-2"
+                      @click="onUploadRecording(index)"
+                      >mdi-upload</v-icon
+                    >
+                  </td>
+                  <td class="text-left">
+                    <v-icon
+                      medium
+                      color="green darken-2"
+                      @click="onLoadRecording(index)"
+                      >mdi-play</v-icon
+                    >
+                  </td>
+                  <td class="text-left">
+                    <v-icon
+                      medium
+                      color="red lighten-1"
+                      @click="onDeleteRecording(index)"
+                      >mdi-delete</v-icon
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>

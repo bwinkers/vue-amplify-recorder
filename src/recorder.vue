@@ -372,7 +372,7 @@ export default {
       if (data.size > 0) {
         const uid = await uuidv4();
         data.name = "clip-" + uid + ".webm";
-        console.log("pushing video...");
+        console.log("pushing video: " + data.name);
         this.recordings.push(data);
       }
     },
