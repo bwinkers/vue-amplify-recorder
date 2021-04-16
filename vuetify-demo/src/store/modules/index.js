@@ -1,1 +1,1 @@
-export { default as app } from './app'
+export { default as multicorder } from './multicorder'

@@ -1,6 +1,6 @@
 <template>
   <video
-    ref="video"
+    ref="multicorder"
     :width="width"
     :height="height"
     :src="source"
@@ -13,7 +13,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 export default {
-  name: "VueRecorder",
+  name: "Multicorder",
 
   props: {
     width: {
@@ -165,15 +165,15 @@ export default {
      * load the stream to the
      */
     loadSrcStream(stream) {
-      if ("srcObject" in this.$refs.video) {
+      if ("srcObject" in this.$refs.multicorder) {
         // new browsers api
-        this.$refs.video.srcObject = stream;
+        this.$refs.multicorder.srcObject = stream;
       } else {
         // old broswers
         this.source = window.HTMLMediaElement.srcObject(stream);
       }
       // Emit video start/live event
-      this.$refs.video.onloadedmetadata = () => {
+      this.$refs.multicorder.onloadedmetadata = () => {
         this.$emit("video-live", stream);
       };
 
@@ -192,15 +192,15 @@ export default {
         track.stop();
         this.$emit("stopped", stream);
 
-        this.$refs.video.srcObject = null;
+        this.$refs.multicorder.srcObject = null;
         this.source = null;
       });
     },
 
     // stop the video from camera or screenshare
     stop() {
-      if (this.$refs.video !== null && this.$refs.video.srcObject) {
-        this.stopStreamedVideo(this.$refs.video);
+      if (this.$refs.multicorder !== null && this.$refs.multicorder.srcObject) {
+        this.stopStreamedVideo(this.$refs.multicorder);
       }
     },
 
@@ -214,15 +214,15 @@ export default {
 
     // pause the video
     pause() {
-      if (this.$refs.video !== null && this.$refs.video.srcObject) {
-        this.$refs.video.pause();
+      if (this.$refs.multicorder !== null && this.$refs.multicorder.srcObject) {
+        this.$refs.multicorder.pause();
       }
     },
 
     // resume the video
     resume() {
-      if (this.$refs.video !== null && this.$refs.video.srcObject) {
-        this.$refs.video.play();
+      if (this.$refs.multicorder !== null && this.$refs.multicorder.srcObject) {
+        this.$refs.multicorder.play();
       }
     },
 
@@ -326,7 +326,7 @@ export default {
      * get canvas
      */
     getCanvas() {
-      let video = this.$refs.video;
+      let video = this.$refs.multicorder;
       console.log(video);
       if (!this.ctx) {
         let canvas = document.createElement("canvas");
@@ -347,7 +347,7 @@ export default {
      * Start recording the current video
      */
     async startRecording() {
-      const stream = this.$refs.video.srcObject;
+      const stream = this.$refs.multicorder.srcObject;
       const recorder = new MediaRecorder(stream);
       this.recorder = recorder;
 
@@ -360,7 +360,7 @@ export default {
      * Stop recording
      */
     async stopRecording() {
-      if (this.$refs.video !== null && this.$refs.video.srcObject) {
+      if (this.$refs.multicorder !== null && this.$refs.multicorder.srcObject) {
         this.recorder.stop();
         console.log(this.recorder.state);
       }
@@ -389,7 +389,7 @@ export default {
       } catch (err) {
         console.error("Error: " + err);
       }
-      console.log(this.$refs.video);
+      console.log(this.$refs.multicorder);
     },
     stopScreenshare() {
       console.log("Stopping Screenshare");

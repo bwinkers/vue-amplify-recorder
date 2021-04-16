@@ -5,7 +5,7 @@
     <v-main>
       <v-row>
         <v-col cols="5">
-          <VueRecorder />
+          <Multicorder />
         </v-col>
       </v-row>
     </v-main>
@@ -13,13 +13,13 @@
 </template>
 
 <script>
-import VueRecorder from "./components/VueRecorder";
+import Multicorder from "./components/Multicorder";
 
 export default {
   name: "App",
 
   components: {
-    VueRecorder,
+    Multicorder,
   },
 
   data: () => ({

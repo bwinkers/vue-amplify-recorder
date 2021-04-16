@@ -148,12 +148,12 @@
 </template>
 
 <script>
-import { VueRecorder } from "../../../src";
+import { Multicorder } from "../../../src";
 
 export default {
   name: "App",
   components: {
-    "vue-recorder": VueRecorder,
+    "vue-recorder": Multicorder,
   },
   data() {
     return {
